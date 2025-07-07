@@ -152,16 +152,18 @@ public class GithubAnalyzerService {
         // Se não encontrou nenhum diretório controller, usa o diretório raiz
         System.out.println("Nenhum diretório de controllers encontrado, usando diretório raiz: " + extractDir);
         return extractDir;
-    }    private List<ControllerMatch> findControllersWithScopeAndPath(String dir, String scope, String path) {
+    }
+
+    private List<ControllerMatch> findControllersWithScopeAndPath(String dir, String scope, String path) {
         List<ControllerMatch> result = new ArrayList<>();
         JavaParser parser = new JavaParser();
-        
+
         Path dirPath = Paths.get(dir);
         if (!Files.exists(dirPath)) {
             System.err.println("Diretório não existe: " + dir);
             return result;
         }
-        
+
         try (Stream<Path> paths = Files.walk(dirPath)) {
             paths.filter(p -> p.toString().endsWith(".java"))
                     .forEach(javaPath -> {
@@ -200,7 +202,7 @@ public class GithubAnalyzerService {
         } catch (IOException e) {
             System.err.println("Erro ao percorrer diretório: " + dir + " - " + e.getMessage());
         }
-        
+
         System.out.println("Encontrados " + result.size() + " matches no diretório: " + dir);
         return result;
     }
