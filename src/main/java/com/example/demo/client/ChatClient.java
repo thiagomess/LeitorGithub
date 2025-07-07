@@ -15,13 +15,12 @@ public class ChatClient {
 
     private final WebClient webClient;
     private final String chatEndpoint;
-   
 
     public ChatClient(WebClient.Builder builder,
-                      @Value("${chat.endpoint:https://genai-inference-app.stackspot.com/v1/agent/01JZ9J6GT997JENKZ9VH77F0TY/chat}") String chatEndpoint) {
+            @Value("${chat.endpoint:https://genai-inference-app.stackspot.com/v1/agent/01JZ9J6GT997JENKZ9VH77F0TY/chat}") String chatEndpoint) {
         this.webClient = builder.build();
         this.chatEndpoint = chatEndpoint;
-     }
+    }
 
     public Mono<String> callChatEndpoint(List<String> uploadIds, String userPrompt, String jwt) {
         JSONObject body = new JSONObject();
@@ -32,11 +31,11 @@ public class ChatClient {
         body.put("upload_ids", new JSONArray(uploadIds));
 
         return webClient.post()
-            .uri(chatEndpoint)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + jwt)
-            .bodyValue(body.toString())
-            .retrieve()
-            .bodyToMono(String.class);
+                .uri(chatEndpoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + jwt)
+                .bodyValue(body.toString())
+                .retrieve()
+                .bodyToMono(String.class);
     }
 }

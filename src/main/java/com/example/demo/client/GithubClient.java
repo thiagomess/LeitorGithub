@@ -1,27 +1,35 @@
 package com.example.demo.client;
 
-import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
-import java.io.InputStream;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 
 @Component
 public class GithubClient {
     private static final String GITHUB_REPO_ZIP = "https://github.com/thiagomess/resource-service/archive/refs/heads/main.zip";
     private static final String ZIP_FILE = "repo.zip";
 
-    public String downloadRepoAsZip() throws Exception {
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Resource> response = restTemplate.exchange(
-            GITHUB_REPO_ZIP, HttpMethod.GET, null, Resource.class);
-        try (InputStream in = response.getBody().getInputStream()) {
-            Files.copy(in, Paths.get(ZIP_FILE), StandardCopyOption.REPLACE_EXISTING);
-        }
-        return ZIP_FILE;
+    private final WebClient webClient;
+
+    public GithubClient(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
+
+    public Mono<String> downloadRepoAsZip() {
+        Path zipPath = Paths.get(ZIP_FILE);
+
+        return webClient.get()
+                .uri(GITHUB_REPO_ZIP)
+                .retrieve()
+                .bodyToFlux(DataBuffer.class)
+                .as(flux -> DataBufferUtils.write(flux, zipPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+                        StandardOpenOption.TRUNCATE_EXISTING))
+                .then(Mono.just(ZIP_FILE));
     }
 }

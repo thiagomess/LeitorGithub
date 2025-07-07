@@ -22,8 +22,6 @@ import java.util.stream.Stream;
 @Service
 public class GithubAnalyzerService {
 
-    private static final String CONTROLLERS_PATH = "resource-service-main/src/main/java/com/example/demo/controller";
-
     private final GithubClient githubClient;
     private final S3UploadClient s3UploadClient;
     private final ChatClient chatClient;
@@ -41,13 +39,15 @@ public class GithubAnalyzerService {
     }
 
     public Mono<ResponseEntity<ApiResponse>> processAnalysis(String scope, String path) {
-        return Mono.fromCallable(() -> {
-            String zipPath = githubClient.downloadRepoAsZip();
-            String extractDir = unzip(zipPath);
-            String controllersDir = extractDir + "/" + CONTROLLERS_PATH;
-            List<ControllerMatch> matches = findControllersWithScopeAndPath(controllersDir, scope, path);
-            return new RepoContext(zipPath, extractDir, matches);
-        })
+        return githubClient.downloadRepoAsZip()
+                .flatMap(zipPath -> {
+                    return Mono.fromCallable(() -> {
+                        String extractDir = unzip(zipPath);
+                        String controllersDir = findControllersDirectory(extractDir);
+                        List<ControllerMatch> matches = findControllersWithScopeAndPath(controllersDir, scope, path);
+                        return new RepoContext(zipPath, extractDir, matches);
+                    });
+                })
                 .flatMap(ctx -> processMatches(ctx, scope, path)
                         .doFinally(signalType -> {
                             try {
@@ -73,31 +73,24 @@ public class GithubAnalyzerService {
                 .filter(m -> m.scopeFound && !m.urlFound)
                 .findFirst();
         if (scopeOnly.isPresent()) {
-            ControllerMatch match = scopeOnly.get();            return oauth2Client.getAccessToken()
-                .flatMap(token -> 
-                    s3UploadClient.uploadFileToEndpoint(match.filePath, token)
-                        .flatMap(uploadId -> 
-                            chatClient.callChatEndpoint(
-                                Collections.singletonList(uploadId),
-                                "scope: " + scopeOnly.get().scope + ", url: " + path,
-                                token)
-                            .map(iaResp -> ResponseEntity.ok(new ApiResponse(extractMessageFromJson(iaResp))))
-                        )
-                        .onErrorResume(e -> 
-                            Mono.just(ResponseEntity.internalServerError()
-                                .body(new ApiResponse("Erro no upload do arquivo: " + e.getMessage())))
-                        )
-                );
+            ControllerMatch match = scopeOnly.get();
+            return oauth2Client.getAccessToken()
+                    .flatMap(token -> s3UploadClient.uploadFileToEndpoint(match.filePath, token)
+                            .flatMap(uploadId -> chatClient.callChatEndpoint(
+                                    Collections.singletonList(uploadId),
+                                    "scope: " + scopeOnly.get().scope + ", url: " + path,
+                                    token)
+                                    .map(iaResp -> ResponseEntity.ok(new ApiResponse(extractMessageFromJson(iaResp)))))
+                            .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError()
+                                    .body(new ApiResponse("Erro no upload do arquivo: " + e.getMessage())))));
         }
 
         return oauth2Client.getAccessToken()
-                .flatMap(token -> 
-                    chatClient.callChatEndpoint(
-                            Collections.emptyList(),
-                            "scope: " + scope + ", url: " + path,
-                            token)
-                        .map(iaResp -> ResponseEntity.ok(new ApiResponse(extractMessageFromJson(iaResp))))
-                );
+                .flatMap(token -> chatClient.callChatEndpoint(
+                        Collections.emptyList(),
+                        "scope: " + scope + ", url: " + path,
+                        token)
+                        .map(iaResp -> ResponseEntity.ok(new ApiResponse(extractMessageFromJson(iaResp)))));
     }
 
     // --- Métodos locais que NÃO fazem chamadas HTTP ---
@@ -120,11 +113,56 @@ public class GithubAnalyzerService {
         return destDir;
     }
 
-    private List<ControllerMatch> findControllersWithScopeAndPath(String dir, String scope, String path)
-            throws IOException {
+    private String findControllersDirectory(String extractDir) {
+        // Lista de possíveis caminhos para controllers
+        String[] possiblePaths = {
+                "resource-service-main/src/main/java/com/example/demo/controller",
+                "src/main/java/com/example/demo/controller",
+                "main/src/main/java/com/example/demo/controller",
+                "resource-service-main/src/main/java/controller",
+                "src/main/java/controller"
+        };
+
+        Path baseDir = Paths.get(extractDir);
+
+        // Primeiro, tenta os caminhos conhecidos
+        for (String possiblePath : possiblePaths) {
+            Path fullPath = baseDir.resolve(possiblePath);
+            if (Files.exists(fullPath) && Files.isDirectory(fullPath)) {
+                System.out.println("Encontrado diretório de controllers: " + fullPath);
+                return fullPath.toString();
+            }
+        }
+
+        // Se não encontrou, procura qualquer diretório chamado "controller"
+        try {
+            Optional<Path> controllerDir = Files.walk(baseDir)
+                    .filter(Files::isDirectory)
+                    .filter(path -> path.getFileName().toString().equals("controller"))
+                    .findFirst();
+
+            if (controllerDir.isPresent()) {
+                System.out.println("Encontrado diretório de controllers: " + controllerDir.get());
+                return controllerDir.get().toString();
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao procurar diretório de controllers: " + e.getMessage());
+        }
+
+        // Se não encontrou nenhum diretório controller, usa o diretório raiz
+        System.out.println("Nenhum diretório de controllers encontrado, usando diretório raiz: " + extractDir);
+        return extractDir;
+    }    private List<ControllerMatch> findControllersWithScopeAndPath(String dir, String scope, String path) {
         List<ControllerMatch> result = new ArrayList<>();
         JavaParser parser = new JavaParser();
-        try (Stream<Path> paths = Files.walk(Paths.get(dir))) {
+        
+        Path dirPath = Paths.get(dir);
+        if (!Files.exists(dirPath)) {
+            System.err.println("Diretório não existe: " + dir);
+            return result;
+        }
+        
+        try (Stream<Path> paths = Files.walk(dirPath)) {
             paths.filter(p -> p.toString().endsWith(".java"))
                     .forEach(javaPath -> {
                         boolean scopeFound = false;
@@ -152,13 +190,18 @@ public class GithubAnalyzerService {
                                     }
                                 }
                             }
-                        } catch (Exception ignored) {
+                        } catch (Exception e) {
+                            System.err.println("Erro ao analisar arquivo: " + javaPath + " - " + e.getMessage());
                         }
                         if (scopeFound || urlFound) {
                             result.add(new ControllerMatch(javaPath, className, scopeFound, urlFound, scope));
                         }
                     });
+        } catch (IOException e) {
+            System.err.println("Erro ao percorrer diretório: " + dir + " - " + e.getMessage());
         }
+        
+        System.out.println("Encontrados " + result.size() + " matches no diretório: " + dir);
         return result;
     }
 

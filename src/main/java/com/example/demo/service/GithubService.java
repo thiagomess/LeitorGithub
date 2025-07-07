@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.client.GithubClient;
 import com.example.demo.util.FileUtil;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Service
 public class GithubService {
@@ -13,9 +14,15 @@ public class GithubService {
         this.githubClient = githubClient;
     }
 
-    public String downloadAndExtractRepo() throws Exception {
-        String zipPath = githubClient.downloadRepoAsZip();
-        String extractDir = FileUtil.unzip(zipPath, "repo");
-        return extractDir;
+    public Mono<String> downloadAndExtractRepo() {
+        return githubClient.downloadRepoAsZip()
+                .map(zipPath -> {
+                    try {
+                        String extractDir = FileUtil.unzip(zipPath, "repo");
+                        return extractDir;
+                    } catch (Exception e) {
+                        throw new RuntimeException("Erro ao extrair repositório", e);
+                    }
+                });
     }
 }
