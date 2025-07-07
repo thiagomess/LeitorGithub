@@ -34,8 +34,7 @@ public class JavaAnalyzerService {
                             Optional<com.github.javaparser.ast.expr.AnnotationExpr> preAuthorize =
                                     method.getAnnotationByName("PreAuthorize");
                             Optional<com.github.javaparser.ast.expr.AnnotationExpr> getMapping =
-                                    method.getAnnotationByName("GetMapping")
-                                    .or(() -> method.getAnnotationByName("RequestMapping"));
+                                    method.getAnnotationByName("GetMapping");
 
                             if (preAuthorize.isPresent() &&
                                 preAuthorize.get().toString().contains("#oauth2.hasScope('" + scope + "')")) {

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class ChatClient {
         this.chatEndpoint = chatEndpoint;
      }
 
-    public String callChatEndpoint(List<String> uploadIds, String userPrompt, String fixedJwt) {
+    public Mono<String> callChatEndpoint(List<String> uploadIds, String userPrompt, String jwt) {
         JSONObject body = new JSONObject();
         body.put("streaming", false);
         body.put("user_prompt", userPrompt);
@@ -33,10 +34,9 @@ public class ChatClient {
         return webClient.post()
             .uri(chatEndpoint)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + fixedJwt)
+            .header("Authorization", "Bearer " + jwt)
             .bodyValue(body.toString())
             .retrieve()
-            .bodyToMono(String.class)
-            .block();
+            .bodyToMono(String.class);
     }
 }

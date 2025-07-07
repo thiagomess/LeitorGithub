@@ -12,7 +12,7 @@ import java.nio.file.StandardCopyOption;
 
 @Component
 public class GithubClient {
-    private static final String GITHUB_REPO_ZIP = "https://github.com/Pastor/modules/archive/refs/heads/master.zip";
+    private static final String GITHUB_REPO_ZIP = "https://github.com/thiagomess/resource-service/archive/refs/heads/main.zip";
     private static final String ZIP_FILE = "repo.zip";
 
     public String downloadRepoAsZip() throws Exception {
