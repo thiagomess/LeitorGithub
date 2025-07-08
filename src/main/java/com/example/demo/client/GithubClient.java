@@ -67,7 +67,6 @@ public class GithubClient {
         return downloadRepository(this.githubRepoUrl, getDefaultDownloadPath().toString());
     }
 
-
     public Mono<String> downloadRepository(String repoUrl) {
         return downloadRepository(repoUrl, getDefaultDownloadPath().toString());
     }

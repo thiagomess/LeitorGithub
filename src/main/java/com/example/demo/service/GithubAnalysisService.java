@@ -254,4 +254,21 @@ public class GithubAnalysisService {
         }
     }
 
+
+    public Mono<ResponseEntity<ApiResponse>> processDirectMessage(String userMessage) {
+        log.info("Processando mensagem direta: {}", userMessage);
+
+        return stackspotClient.getAccessToken()
+                .flatMap(token -> stackspotClient.callChatEndpoint(
+                        Collections.emptyList(),
+                        userMessage,
+                        token)
+                        .map(response -> ResponseEntity.ok(new ApiResponse(JsonUtils.extractMessage(response)))))
+                .doOnSuccess(result -> log.info("Processamento direto de mensagem concluído com sucesso"))
+                .onErrorResume(error -> {
+                    log.error("Erro no processamento direto de mensagem: {}", error.getMessage());
+                    return Mono.just(ResponseEntity.internalServerError()
+                            .body(new ApiResponse("Erro no processamento: " + error.getMessage())));
+                });
+    }
 }

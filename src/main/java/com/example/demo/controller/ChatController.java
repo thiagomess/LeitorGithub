@@ -30,20 +30,24 @@ public class ChatController {
         log.info("Recebida requisição de análise: {}", request.message());
 
         String msg = request.message();
-        if (msg != null) {
+        if (msg != null && !msg.trim().isEmpty()) {
             Matcher matcher = MESSAGE_PATTERN.matcher(msg);
             if (matcher.matches()) {
                 String scope = matcher.group(1).trim();
                 String path = matcher.group(2).trim();
 
-                log.info("Analisando - Scope: '{}', Path: '{}'", scope, path);
+                log.info("Analisando com padrão scope/url - Scope: '{}', Path: '{}'", scope, path);
                 return analysisService.analyzeRepository(scope, path);
+            } else {
+                log.info("Mensagem não segue o padrão scope/url, enviando diretamente para processamento: {}", msg);
+                return analysisService.processDirectMessage(msg);
             }
         }
 
-        log.warn("Formato de mensagem inválido: {}", msg);
+        log.warn("Mensagem vazia ou inválida");
         String example = "{\"message\": \"scope: ping, url: ping/scope\"}";
         return Mono.just(ResponseEntity.badRequest()
-                .body(new ApiResponse("O payload deve ser enviado como: " + example)));
+                .body(new ApiResponse(
+                        "A mensagem não pode ser vazia. Para análise de repositório, use o formato: " + example)));
     }
 }
