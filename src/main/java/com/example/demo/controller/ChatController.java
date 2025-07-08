@@ -14,19 +14,19 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api")
-public class GithubAnalyzerController {
+public class ChatController {
 
-    private static final Logger log = LoggerFactory.getLogger(GithubAnalyzerController.class);
+    private static final Logger log = LoggerFactory.getLogger(ChatController.class);
     private static final Pattern MESSAGE_PATTERN = Pattern.compile("scope:\\s*([^,]+),\\s*url:\\s*(.+)");
 
     private final GithubAnalysisService analysisService;
 
-    public GithubAnalyzerController(GithubAnalysisService analysisService) {
+    public ChatController(GithubAnalysisService analysisService) {
         this.analysisService = analysisService;
     }
 
-    @PostMapping("/analyze")
-    public Mono<ResponseEntity<ApiResponse>> analyze(@RequestBody ApiRequest request) {
+    @PostMapping("/chat")
+    public Mono<ResponseEntity<ApiResponse>> message(@RequestBody ApiRequest request) {
         log.info("Recebida requisição de análise: {}", request.message());
 
         String msg = request.message();
