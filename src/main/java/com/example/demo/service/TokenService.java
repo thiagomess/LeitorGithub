@@ -1,23 +1,23 @@
 package com.example.demo.service;
 
-import com.example.demo.client.OAuth2Client;
+import com.example.demo.client.StackspotClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 public class TokenService {
 
-    private final OAuth2Client oauth2Client;
+    private final StackspotClient stackspotClient;
 
-    public TokenService(OAuth2Client oauth2Client) {
-        this.oauth2Client = oauth2Client;
+    public TokenService(StackspotClient stackspotClient) {
+        this.stackspotClient = stackspotClient;
     }
 
     public Mono<String> getCurrentToken() {
-        return oauth2Client.getAccessToken();
+        return stackspotClient.getAccessToken();
     }
 
     public void invalidateToken() {
-        oauth2Client.invalidateToken();
+        stackspotClient.invalidateToken();
     }
 }
