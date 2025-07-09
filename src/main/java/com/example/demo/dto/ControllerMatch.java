@@ -6,6 +6,6 @@ public record ControllerMatch(
     Path filePath,
     String className,
     boolean scopeFound,
-    boolean urlFound,
+    boolean pathFound,
     String scope
 ) {}

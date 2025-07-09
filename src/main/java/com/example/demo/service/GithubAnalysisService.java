@@ -97,7 +97,7 @@ public class GithubAnalysisService {
 
     private void analyzeJavaFile(Path javaPath, String scope, String path, List<ControllerMatch> result) {
         boolean scopeFound = false;
-        boolean urlFound = false;
+        boolean pathFound = false;
         String className = javaPath.getFileName().toString();
 
         log.debug("Analisando arquivo Java: {}", javaPath);
@@ -118,7 +118,7 @@ public class GithubAnalysisService {
                             scopeFound = true;
                         }
                         if (hasPath(method, path)) {
-                            urlFound = true;
+                            pathFound = true;
                             log.info("Encontrado método com path '{}' em {}: {}", path, className,
                                     method.getNameAsString());
                         }
@@ -131,9 +131,9 @@ public class GithubAnalysisService {
             log.warn("Erro ao analisar arquivo {}: {}", javaPath, e.getMessage(), e);
         }
 
-        if (scopeFound || urlFound) {
-            result.add(new ControllerMatch(javaPath, className, scopeFound, urlFound, scope));
-            log.debug("Match encontrado em {}: scope={}, url={}", className, scopeFound, urlFound);
+        if (scopeFound || pathFound) {
+            result.add(new ControllerMatch(javaPath, className, scopeFound, pathFound, scope));
+            log.debug("Match encontrado em {}: scope={}, path={}", className, scopeFound, pathFound);
         }
     }
 
@@ -188,11 +188,12 @@ public class GithubAnalysisService {
         return false;
     }
 
+   //Define ação 
     private Mono<ResponseEntity<ApiResponse>> processMatches(RepoContext context, String scope, String path) {
         List<ControllerMatch> matches = context.matches();
 
         Optional<ControllerMatch> bothFound = matches.stream()
-                .filter(m -> m.scopeFound() && m.urlFound())
+                .filter(m -> m.scopeFound() && m.pathFound())
                 .findFirst();
 
         if (bothFound.isPresent()) {
@@ -202,7 +203,7 @@ public class GithubAnalysisService {
         }
 
         Optional<ControllerMatch> scopeOnly = matches.stream()
-                .filter(m -> m.scopeFound() && !m.urlFound())
+                .filter(m -> m.scopeFound() && !m.pathFound())
                 .findFirst();
 
         if (scopeOnly.isPresent()) {
@@ -219,7 +220,7 @@ public class GithubAnalysisService {
                 .flatMap(token -> s3UploadClient.uploadFileToEndpoint(match.filePath(), token)
                         .flatMap(uploadId -> stackspotClient.callChatEndpoint(
                                 Collections.singletonList(uploadId),
-                                "scope: " + match.scope() + ", url: " + path,
+                                "scope: " + match.scope() + ", path: " + path,
                                 token)
                                 .map(response -> ResponseEntity
                                         .ok(new ApiResponse(JsonUtils.extractMessage(response)))))
@@ -234,7 +235,7 @@ public class GithubAnalysisService {
         return stackspotClient.getAccessToken()
                 .flatMap(token -> stackspotClient.callChatEndpoint(
                         Collections.emptyList(),
-                        "scope: " + scope + ", url: " + path,
+                        "scope: " + scope + ", path: " + path,
                         token)
                         .map(response -> ResponseEntity.ok(new ApiResponse(JsonUtils.extractMessage(response)))))
                 .onErrorResume(error -> {
@@ -253,7 +254,6 @@ public class GithubAnalysisService {
             log.warn("Erro ao limpar recursos: {}", e.getMessage());
         }
     }
-
 
     public Mono<ResponseEntity<ApiResponse>> processDirectMessage(String userMessage) {
         log.info("Processando mensagem direta: {}", userMessage);

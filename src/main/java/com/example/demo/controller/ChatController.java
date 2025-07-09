@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class ChatController {
 
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
-    private static final Pattern MESSAGE_PATTERN = Pattern.compile("scope:\\s*([^,]+),\\s*url:\\s*(.+)");
+    private static final Pattern MESSAGE_PATTERN = Pattern.compile("scope:\\s*([^,]+),\\s*path:\\s*(.+)");
 
     private final GithubAnalysisService analysisService;
 
@@ -36,16 +36,16 @@ public class ChatController {
                 String scope = matcher.group(1).trim();
                 String path = matcher.group(2).trim();
 
-                log.info("Analisando com padrão scope/url - Scope: '{}', Path: '{}'", scope, path);
+                log.info("Analisando com padrão scope/path - Scope: '{}', Path: '{}'", scope, path);
                 return analysisService.analyzeRepository(scope, path);
             } else {
-                log.info("Mensagem não segue o padrão scope/url, enviando diretamente para processamento: {}", msg);
+                log.info("Mensagem não segue o padrão scope/path, enviando diretamente para processamento: {}", msg);
                 return analysisService.processDirectMessage(msg);
             }
         }
 
         log.warn("Mensagem vazia ou inválida");
-        String example = "{\"message\": \"scope: ping, url: ping/scope\"}";
+        String example = "{\"message\": \"scope: ping, path: ping/scope\"}";
         return Mono.just(ResponseEntity.badRequest()
                 .body(new ApiResponse(
                         "A mensagem não pode ser vazia. Para análise de repositório, use o formato: " + example)));
