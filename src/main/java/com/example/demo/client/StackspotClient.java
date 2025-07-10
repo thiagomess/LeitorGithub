@@ -1,6 +1,9 @@
 package com.example.demo.client;
 
-import com.example.demo.dto.TokenResponse;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,10 +13,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import com.example.demo.dto.TokenResponse;
+
+import reactor.core.publisher.Mono;
 
 @Component
 public class StackspotClient {
@@ -32,9 +35,7 @@ public class StackspotClient {
     @Value("${oauth2.token.url:https://idm.stackspot.com/stackspot-freemium/oidc/oauth/token}")
     private String tokenUrl;
 
-    // Chat Configuration
-    @Value("${chat.endpoint:https://genai-inference-app.stackspot.com/v1/agent/01JZ9J6GT997JENKZ9VH77F0TY/chat}")
-    private String chatEndpoint;
+
 
     // Token cache
     private String cachedToken;
@@ -98,7 +99,7 @@ public class StackspotClient {
     }
 
     // Chat/AI Integration
-    public Mono<String> callChatEndpoint(java.util.List<String> uploadIds, String userPrompt, String jwt) {
+    public Mono<String> callChatEndpoint(List<String> uploadIds, String userPrompt, String jwt, String chatEndpoint) {
         log.info("Chamando endpoint de chat com {} arquivos", uploadIds.size());
 
         org.json.JSONObject body = new org.json.JSONObject();
