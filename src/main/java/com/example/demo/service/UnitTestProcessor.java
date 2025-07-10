@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.client.S3UploadClient;
 import com.example.demo.client.StackspotClient;
+import com.example.demo.constants.ApplicationConstants;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.ControllerMatch;
 import com.example.demo.util.JsonUtils;
@@ -25,7 +26,7 @@ import java.util.List;
 public class UnitTestProcessor {
     private static final Logger log = LoggerFactory.getLogger(UnitTestProcessor.class);
 
-    @Value("${chat.endpoint:https://genai-inference-app.stackspot.com/v1/agent/01JY5RF8WWG0V3H32KMNTDGF25/chat}")
+    @Value("${chat.endpoint:${com.example.demo.constants.ApplicationConstants.CHAT_ENDPOINT_TEST_UNIT}}")
     private String chatEndpointTestUnit;
 
     private final StackspotClient stackspotClient;

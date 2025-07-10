@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.constants.ApplicationConstants;
 import com.example.demo.util.DirectoryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,8 @@ public class TestFileLocator {
             if (testDirOpt.isPresent()) {
                 return testDirOpt.get();
             }
-
             log.warn("Nenhum diretório de teste encontrado em: {}", projectRoot);
-            return projectRoot + "/src/test/java"; // Default path
+            return projectRoot + ApplicationConstants.DEFAULT_TEST_PATH;
         }).subscribeOn(Schedulers.boundedElastic());
     }
 

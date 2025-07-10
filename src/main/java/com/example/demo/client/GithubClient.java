@@ -1,5 +1,6 @@
 package com.example.demo.client;
 
+import com.example.demo.constants.ApplicationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 
 @Component
-public class GithubClient {
+public class GithubClient implements ApiClient {
 
     private static final Logger log = LoggerFactory.getLogger(GithubClient.class);
     private static final int MAX_MEMORY_SIZE = 16 * 1024 * 1024; // 16MB
@@ -29,10 +30,10 @@ public class GithubClient {
     private final WebClient webClient;
 
     // GitHub Configuration
-    @Value("${github.repo.url:https://github.com/thiagomess/resource-service/archive/refs/heads/main.zip}")
+    @Value("${github.repo.url:${com.example.demo.constants.ApplicationConstants.DEFAULT_GITHUB_REPO_URL}}")
     private String githubRepoUrl;
 
-    @Value("${github.download.path:repo.zip}")
+    @Value("${github.download.path:${com.example.demo.constants.ApplicationConstants.DEFAULT_DOWNLOAD_PATH}}")
     private String downloadPath;
 
     public GithubClient(WebClient.Builder webClientBuilder) {

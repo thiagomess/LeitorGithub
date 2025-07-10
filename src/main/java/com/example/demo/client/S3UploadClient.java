@@ -1,5 +1,6 @@
 package com.example.demo.client;
 
+import com.example.demo.constants.ApplicationConstants;
 import java.nio.file.Path;
 
 import org.apache.http.HttpEntity;
@@ -15,7 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Component
-public class S3UploadClient {
+public class S3UploadClient implements ApiClient {
 
     private final WebClient webClient;
 
@@ -29,7 +30,7 @@ public class S3UploadClient {
                 filePath.getFileName().toString());
 
         return webClient.post()
-                .uri("https://data-integration-api.stackspot.com/v2/file-upload/form")
+                .uri(ApplicationConstants.FILE_UPLOAD_ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue(requestJson)

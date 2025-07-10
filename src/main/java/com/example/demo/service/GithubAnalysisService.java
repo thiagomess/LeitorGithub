@@ -4,7 +4,7 @@ import com.example.demo.client.GithubClient;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.ControllerMatch;
 import com.example.demo.dto.RepoContext;
-import com.example.demo.enums.TypeAction;
+import com.example.demo.factory.ProcessorFactory;
 import com.example.demo.util.DirectoryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +14,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
-import java.util.Optional;
-
 
 @Service
 public class GithubAnalysisService {
@@ -24,23 +22,22 @@ public class GithubAnalysisService {
 
     private final GithubClient githubClient;
     private final JavaSourceAnalyzer javaSourceAnalyzer;
-    private final UnitTestProcessor unitTestProcessor;
-    private final ControllerProcessor controllerProcessor;
+    private final ControllerProcessor controllerProcessor; // Mantido para o processDirectMessage
     private final ResourceManager resourceManager;
+    private final ProcessorFactory processorFactory;
 
     public GithubAnalysisService(GithubClient githubClient,
             JavaSourceAnalyzer javaSourceAnalyzer,
-            UnitTestProcessor unitTestProcessor,
             ControllerProcessor controllerProcessor,
-            ResourceManager resourceManager) {
+            ResourceManager resourceManager,
+            ProcessorFactory processorFactory) {
         this.githubClient = githubClient;
         this.javaSourceAnalyzer = javaSourceAnalyzer;
-        this.unitTestProcessor = unitTestProcessor;
         this.controllerProcessor = controllerProcessor;
         this.resourceManager = resourceManager;
+        this.processorFactory = processorFactory;
     }
 
- 
     public Mono<ResponseEntity<ApiResponse>> analyzeRepository(String scope, String path, String type) {
         log.info("Iniciando análise do repositório - Scope: {}, Path: {}, Type: {}", scope, path, type);
 
@@ -85,27 +82,15 @@ public class GithubAnalysisService {
     }
 
     /**
-     * Define a ação a ser tomada com base no tipo de processamento.
+     * Define a ação a ser tomada com base no tipo de processamento usando o
+     * factory.
      */
     private Mono<ResponseEntity<ApiResponse>> processMatches(RepoContext context, String scope, String path,
             String type) {
         log.info("Processando matches com type: {}", type);
 
-        try {
-            TypeAction typeAction = TypeAction.fromString(type);
-
-            if (typeAction == TypeAction.UNIT_TEST) {
-                Optional<ControllerMatch> scopeFound = context.matches().stream()
-                        .filter(m -> m.scopeFound())
-                        .findFirst();
-                return unitTestProcessor.processUnitTest(scopeFound.orElse(null), scope, path);
-            } else {
-                return controllerProcessor.processControllerLogic(context.matches(), scope, path);
-            }
-        } catch (UnsupportedOperationException e) {
-            log.warn("Tipo não suportado: {}, usando lógica padrão de controller", type);
-            return controllerProcessor.processControllerLogic(context.matches(), scope, path);
-        }
+        return processorFactory.getProcessor(type)
+                .process(context.matches(), scope, path);
     }
 
     /**

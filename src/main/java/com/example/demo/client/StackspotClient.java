@@ -1,5 +1,6 @@
 package com.example.demo.client;
 
+import com.example.demo.constants.ApplicationConstants;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -19,7 +20,7 @@ import com.example.demo.dto.TokenResponse;
 import reactor.core.publisher.Mono;
 
 @Component
-public class StackspotClient {
+public class StackspotClient implements ApiClient {
 
     private static final Logger log = LoggerFactory.getLogger(StackspotClient.class);
 
@@ -32,10 +33,8 @@ public class StackspotClient {
     @Value("${oauth2.client.secret}")
     private String clientSecret;
 
-    @Value("${oauth2.token.url:https://idm.stackspot.com/stackspot-freemium/oidc/oauth/token}")
+    @Value("${oauth2.token.url:${com.example.demo.constants.ApplicationConstants.DEFAULT_TOKEN_URL}}")
     private String tokenUrl;
-
-
 
     // Token cache
     private String cachedToken;
@@ -46,6 +45,11 @@ public class StackspotClient {
     }
 
     // OAuth2 Token Management
+    @Override
+    public Mono<String> authenticate() {
+        return getAccessToken();
+    }
+
     public Mono<String> getAccessToken() {
         if (isTokenValid()) {
             log.debug("Usando token em cache");
