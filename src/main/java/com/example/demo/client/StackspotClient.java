@@ -1,6 +1,5 @@
 package com.example.demo.client;
 
-import com.example.demo.constants.ApplicationConstants;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -33,7 +32,7 @@ public class StackspotClient implements ApiClient {
     @Value("${oauth2.client.secret}")
     private String clientSecret;
 
-    @Value("${oauth2.token.url:${com.example.demo.constants.ApplicationConstants.DEFAULT_TOKEN_URL}}")
+    @Value("${oauth2.token.url}")
     private String tokenUrl;
 
     // Token cache

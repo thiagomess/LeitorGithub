@@ -1,6 +1,5 @@
 package com.example.demo.client;
 
-import com.example.demo.constants.ApplicationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,10 +29,10 @@ public class GithubClient implements ApiClient {
     private final WebClient webClient;
 
     // GitHub Configuration
-    @Value("${github.repo.url:${com.example.demo.constants.ApplicationConstants.DEFAULT_GITHUB_REPO_URL}}")
+    @Value("${github.repo.url}")
     private String githubRepoUrl;
 
-    @Value("${github.download.path:${com.example.demo.constants.ApplicationConstants.DEFAULT_DOWNLOAD_PATH}}")
+    @Value("${github.download.path}")
     private String downloadPath;
 
     public GithubClient(WebClient.Builder webClientBuilder) {

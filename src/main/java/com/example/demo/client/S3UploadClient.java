@@ -1,6 +1,5 @@
 package com.example.demo.client;
 
-import com.example.demo.constants.ApplicationConstants;
 import java.nio.file.Path;
 
 import org.apache.http.HttpEntity;
@@ -10,6 +9,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -24,13 +24,16 @@ public class S3UploadClient implements ApiClient {
         this.webClient = builder.build();
     }
 
+    @Value("${file.upload.endpoint}")
+    private String fileUploadEndpoint;
+
     public Mono<String> uploadFileToEndpoint(Path filePath, String jwt) {
         String requestJson = String.format(
                 "{\"file_name\": \"%s\", \"target_type\": \"CONTEXT\", \"expiration\": 60}",
                 filePath.getFileName().toString());
 
         return webClient.post()
-                .uri(ApplicationConstants.FILE_UPLOAD_ENDPOINT)
+                .uri(fileUploadEndpoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue(requestJson)

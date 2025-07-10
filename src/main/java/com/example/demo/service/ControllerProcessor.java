@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.example.demo.client.S3UploadClient;
 import com.example.demo.client.StackspotClient;
-import com.example.demo.constants.ApplicationConstants;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.ControllerMatch;
 import com.example.demo.util.JsonUtils;
@@ -23,7 +22,7 @@ import java.util.Optional;
 public class ControllerProcessor {
     private static final Logger log = LoggerFactory.getLogger(ControllerProcessor.class);
 
-    @Value("${chat.endpoint:${com.example.demo.constants.ApplicationConstants.CHAT_ENDPOINT_CONTROLLER}}")
+    @Value("${chat.endpoint.controller}")
     private String chatEndpointController;
 
     private final StackspotClient stackspotClient;
@@ -46,7 +45,7 @@ public class ControllerProcessor {
 
         if (bothFound.isPresent()) {
             log.info("Endpoint já existe na classe: {}", bothFound.get().className());
-            String response = ApplicationConstants.ENDPOINT_ALREADY_EXISTS + bothFound.get().className();
+            String response = "Já existe o endpoint com o escopo informado.\nClasse: " + bothFound.get().className();
             return Mono.just(ResponseEntity.ok(new ApiResponse(response)));
         }
 

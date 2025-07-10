@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.example.demo.client.S3UploadClient;
 import com.example.demo.client.StackspotClient;
-import com.example.demo.constants.ApplicationConstants;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.ControllerMatch;
 import com.example.demo.util.JsonUtils;
@@ -26,7 +25,7 @@ import java.util.List;
 public class UnitTestProcessor {
     private static final Logger log = LoggerFactory.getLogger(UnitTestProcessor.class);
 
-    @Value("${chat.endpoint:${com.example.demo.constants.ApplicationConstants.CHAT_ENDPOINT_TEST_UNIT}}")
+    @Value("${chat.endpoint.test}")
     private String chatEndpointTestUnit;
 
     private final StackspotClient stackspotClient;

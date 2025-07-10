@@ -1,9 +1,9 @@
 package com.example.demo.service;
 
-import com.example.demo.constants.ApplicationConstants;
 import com.example.demo.util.DirectoryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -19,6 +19,9 @@ import java.util.Optional;
 public class TestFileLocator {
     private static final Logger log = LoggerFactory.getLogger(TestFileLocator.class);
 
+    @Value("${default.test.path}")
+    private String defaultTestPath;
+
     public Mono<String> findTestDirectory(String projectRoot) {
         return Mono.fromCallable(() -> {
             // Utiliza o DirectoryFinder para localizar o diretório de testes
@@ -28,7 +31,7 @@ public class TestFileLocator {
                 return testDirOpt.get();
             }
             log.warn("Nenhum diretório de teste encontrado em: {}", projectRoot);
-            return projectRoot + ApplicationConstants.DEFAULT_TEST_PATH;
+            return projectRoot + defaultTestPath;
         }).subscribeOn(Schedulers.boundedElastic());
     }
 
@@ -58,30 +61,4 @@ public class TestFileLocator {
         }).subscribeOn(Schedulers.boundedElastic());
     }
 
-    /**
-     * Encontra a classe original que corresponde a uma classe de teste.
-     */
-    public Path findOriginalClass(Path testClassPath, String originalClassName) {
-        log.debug("Procurando classe original: {}", originalClassName);
-
-        try {
-            // Extrair o diretório raiz do projeto usando o DirectoryFinder
-            String projectRoot = DirectoryFinder.extractProjectRoot(testClassPath);
-
-            // Usar o método específico do DirectoryFinder para encontrar classes Java
-            Optional<Path> foundClass = DirectoryFinder.findJavaClass(projectRoot, originalClassName);
-
-            if (foundClass.isPresent()) {
-                log.info("Classe original encontrada: {}", foundClass.get());
-                return foundClass.get();
-            }
-
-            log.warn("Classe original não encontrada em diretórios padrão");
-
-        } catch (Exception e) {
-            log.error("Erro ao buscar classe original: {}", e.getMessage());
-        }
-
-        return testClassPath;
-    }
 }
