@@ -2,7 +2,6 @@ package com.example.demo.enums;
 
 public enum DirectoryType {
     CONTROLLER("controllers"),
-    SOURCE("código-fonte"),
     TEST("testes");
 
     private final String description;

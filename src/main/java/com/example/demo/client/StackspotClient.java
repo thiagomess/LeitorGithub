@@ -95,12 +95,6 @@ public class StackspotClient implements ApiClient {
         return tokenResponse;
     }
 
-    public void invalidateToken() {
-        log.info("Invalidando cache do token");
-        this.cachedToken = null;
-        this.tokenExpiration = null;
-    }
-
     // Chat/AI Integration
     public Mono<String> callChatEndpoint(List<String> uploadIds, String userPrompt, String jwt, String chatEndpoint) {
         log.info("Chamando endpoint de chat com {} arquivos", uploadIds.size());

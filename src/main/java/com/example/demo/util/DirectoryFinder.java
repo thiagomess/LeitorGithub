@@ -22,12 +22,6 @@ public final class DirectoryFinder {
             "src/main/java"
     };
 
-    private static final String[] POSSIBLE_SOURCE_PATHS = {
-            "src/main/java",
-            "src/java",
-            "src"
-    };
-
     private static final String[] POSSIBLE_TEST_PATHS = {
             "src/test/java",
             "test/java",
@@ -35,27 +29,17 @@ public final class DirectoryFinder {
             "src/test"
     };
 
-
-
-
     private static Optional<String> findDirectory(String baseDir, DirectoryType type) {
         Path basePath = Paths.get(baseDir);
-        String[] possiblePaths;
 
-        switch (type) {
-            case DirectoryType.CONTROLLER:
-                possiblePaths = POSSIBLE_CONTROLLER_PATHS;
-                break;
-            case DirectoryType.SOURCE:
-                possiblePaths = POSSIBLE_SOURCE_PATHS;
-                break;
-            case DirectoryType.TEST:
-                possiblePaths = POSSIBLE_TEST_PATHS;
-                break;
-            default:
-                log.warn("Tipo de diretório desconhecido: {}", type);
-                return Optional.empty();
-        }
+        String[] possiblePaths = switch (type) {
+        case CONTROLLER -> POSSIBLE_CONTROLLER_PATHS;
+        case TEST -> POSSIBLE_TEST_PATHS;
+        default -> {
+            log.warn("Tipo de diretório desconhecido: {}", type);
+            yield new String[0];
+        	}
+        };
 
         log.debug("Procurando diretório de {} em: {}", type.getDescription(), baseDir);
 
@@ -74,10 +58,6 @@ public final class DirectoryFinder {
     public static String findControllersDirectory(String extractDir) {
         return findDirectory(extractDir, DirectoryType.CONTROLLER)
                 .orElse(extractDir); 
-    }
-
-    public static Optional<String> findSourceDirectory(String projectRoot) {
-        return findDirectory(projectRoot, DirectoryType.SOURCE);
     }
 
     public static Optional<String> findTestDirectory(String projectRoot) {
@@ -104,23 +84,6 @@ public final class DirectoryFinder {
             log.error("Erro ao procurar arquivo: {}", e.getMessage());
             return Optional.empty();
         }
-    }
-
-    public static Optional<Path> findJavaClass(String projectRoot, String className) {
-        // Adiciona a extensão .java se não estiver presente
-        if (!className.endsWith(".java")) {
-            className = className + ".java";
-        }
-
-        Optional<String> sourceDir = findSourceDirectory(projectRoot);
-        if (sourceDir.isPresent()) {
-            Optional<Path> classPath = findFileInDirectory(sourceDir.get(), className);
-            if (classPath.isPresent()) {
-                return classPath;
-            }
-        }
-
-        return findFileInDirectory(projectRoot, className);
     }
 
     public static Optional<Path> findTestClass(String projectRoot, String originalClassName) {
