@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 
 @Component
-public class GithubClient implements ApiClient {
+public class GithubClient {
 
     private static final Logger log = LoggerFactory.getLogger(GithubClient.class);
     private static final int MAX_MEMORY_SIZE = 16 * 1024 * 1024; // 16MB

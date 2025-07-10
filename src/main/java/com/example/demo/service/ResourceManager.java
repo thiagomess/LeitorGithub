@@ -10,16 +10,10 @@ import reactor.core.scheduler.Schedulers;
 import java.io.File;
 import java.nio.file.Paths;
 
-/**
- * Componente responsável por operações de limpeza e manutenção de recursos.
- */
 @Component
 public class ResourceManager {
     private static final Logger log = LoggerFactory.getLogger(ResourceManager.class);
 
-    /**
-     * Limpa recursos temporários após o processamento.
-     */
     public void cleanupResources(String zipPath) {
         try {
             log.debug("Limpando recursos temporários");
@@ -30,9 +24,6 @@ public class ResourceManager {
         }
     }
 
-    /**
-     * Extrai o repositório do arquivo zip.
-     */
     public Mono<String> extractRepository(String zipPath) {
         return Mono.fromCallable(() -> {
             log.debug("Extraindo repositório: {}", zipPath);

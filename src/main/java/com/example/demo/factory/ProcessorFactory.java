@@ -11,9 +11,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-/**
- * Factory para criar o processador adequado com base no tipo de ação.
- */
 @Component
 public class ProcessorFactory {
 
@@ -25,12 +22,6 @@ public class ProcessorFactory {
         this.unitTestProcessor = unitTestProcessor;
     }
 
-    /**
-     * Retorna o processador adequado com base no tipo de ação.
-     * 
-     * @param type O tipo de ação.
-     * @return O processador adequado.
-     */
     public ActionProcessor getProcessor(String type) {
         try {
             TypeAction typeAction = TypeAction.fromString(type);
@@ -46,16 +37,10 @@ public class ProcessorFactory {
         }
     }
 
-    /**
-     * Interface para os processadores de ação.
-     */
     public interface ActionProcessor {
         Mono<ResponseEntity<ApiResponse>> process(List<ControllerMatch> matches, String scope, String path);
     }
 
-    /**
-     * Implementação para processamento de controllers.
-     */
     private class ControllerActionProcessor implements ActionProcessor {
         @Override
         public Mono<ResponseEntity<ApiResponse>> process(List<ControllerMatch> matches, String scope, String path) {
@@ -63,9 +48,6 @@ public class ProcessorFactory {
         }
     }
 
-    /**
-     * Implementação para processamento de testes unitários.
-     */
     private class UnitTestActionProcessor implements ActionProcessor {
         @Override
         public Mono<ResponseEntity<ApiResponse>> process(List<ControllerMatch> matches, String scope, String path) {

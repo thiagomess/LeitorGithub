@@ -22,7 +22,7 @@ public class GithubAnalysisService {
 
     private final GithubClient githubClient;
     private final JavaSourceAnalyzer javaSourceAnalyzer;
-    private final ControllerProcessor controllerProcessor; // Mantido para o processDirectMessage
+    private final ControllerProcessor controllerProcessor;
     private final ResourceManager resourceManager;
     private final ProcessorFactory processorFactory;
 
@@ -47,9 +47,6 @@ public class GithubAnalysisService {
                 .doOnError(error -> log.error("Erro na análise do repositório: {}", error.getMessage()));
     }
 
-    /**
-     * Processa o repositório para análise.
-     */
     private Mono<ResponseEntity<ApiResponse>> processRepository(String zipPath, String scope, String path,
             String type) {
         return resourceManager.extractRepository(zipPath)
@@ -59,9 +56,6 @@ public class GithubAnalysisService {
                 .doFinally(signalType -> resourceManager.cleanupResources(zipPath));
     }
 
-    /**
-     * Encontra o diretório de controllers no repositório extraído.
-     */
     private Mono<String> findControllersDirectory(String extractDir) {
         return Mono.fromCallable(() -> {
             log.debug("Procurando diretório de controllers");
@@ -69,9 +63,6 @@ public class GithubAnalysisService {
         }).subscribeOn(Schedulers.boundedElastic());
     }
 
-    /**
-     * Analisa arquivos Java de forma assíncrona.
-     */
     private Mono<RepoContext> analyzeJavaFilesAsync(String controllersDir, String scope, String path, String zipPath) {
         return Mono.fromCallable(() -> {
             log.debug("Analisando arquivos Java no diretório: {}", controllersDir);
@@ -81,10 +72,6 @@ public class GithubAnalysisService {
         }).subscribeOn(Schedulers.boundedElastic());
     }
 
-    /**
-     * Define a ação a ser tomada com base no tipo de processamento usando o
-     * factory.
-     */
     private Mono<ResponseEntity<ApiResponse>> processMatches(RepoContext context, String scope, String path,
             String type) {
         log.info("Processando matches com type: {}", type);
@@ -93,9 +80,6 @@ public class GithubAnalysisService {
                 .process(context.matches(), scope, path);
     }
 
-    /**
-     * Processa uma mensagem direta para o chatbot.
-     */
     public Mono<ResponseEntity<ApiResponse>> processDirectMessage(String userMessage) {
         return controllerProcessor.processDirectMessage(userMessage);
     }

@@ -15,9 +15,6 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.Optional;
 
-/**
- * Componente responsável por processar controllers e endpoints.
- */
 @Component
 public class ControllerProcessor {
     private static final Logger log = LoggerFactory.getLogger(ControllerProcessor.class);
@@ -33,9 +30,6 @@ public class ControllerProcessor {
         this.s3UploadClient = s3UploadClient;
     }
 
-    /**
-     * Processa a lógica de controllers para matches encontrados.
-     */
     public Mono<ResponseEntity<ApiResponse>> processControllerLogic(
             java.util.List<ControllerMatch> matches, String scope, String path) {
 
@@ -62,9 +56,6 @@ public class ControllerProcessor {
         return createNewEndpoint(scope, path);
     }
 
-    /**
-     * Processa um scope existente para adicionar um novo path.
-     */
     private Mono<ResponseEntity<ApiResponse>> processExistingScope(ControllerMatch match, String path) {
         return stackspotClient.getAccessToken()
                 .flatMap(token -> s3UploadClient.uploadFileToEndpoint(match.filePath(), token)
@@ -81,9 +72,6 @@ public class ControllerProcessor {
                         }));
     }
 
-    /**
-     * Cria um novo endpoint quando não existe um com o scope especificado.
-     */
     public Mono<ResponseEntity<ApiResponse>> createNewEndpoint(String scope, String path) {
         return stackspotClient.getAccessToken()
                 .flatMap(token -> stackspotClient.callChatEndpoint(
@@ -98,9 +86,6 @@ public class ControllerProcessor {
                 });
     }
 
-    /**
-     * Processa uma mensagem direta para o chatbot.
-     */
     public Mono<ResponseEntity<ApiResponse>> processDirectMessage(String userMessage) {
         log.info("Processando mensagem direta: {}", userMessage);
 

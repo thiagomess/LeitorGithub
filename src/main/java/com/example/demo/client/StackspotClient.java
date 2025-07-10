@@ -19,7 +19,7 @@ import com.example.demo.dto.TokenResponse;
 import reactor.core.publisher.Mono;
 
 @Component
-public class StackspotClient implements ApiClient {
+public class StackspotClient {
 
     private static final Logger log = LoggerFactory.getLogger(StackspotClient.class);
 
@@ -44,10 +44,6 @@ public class StackspotClient implements ApiClient {
     }
 
     // OAuth2 Token Management
-    @Override
-    public Mono<String> authenticate() {
-        return getAccessToken();
-    }
 
     public Mono<String> getAccessToken() {
         if (isTokenValid()) {

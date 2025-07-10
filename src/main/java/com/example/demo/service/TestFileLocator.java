@@ -12,9 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-/**
- * Componente responsável por localizar arquivos de teste e classes originais.
- */
 @Component
 public class TestFileLocator {
     private static final Logger log = LoggerFactory.getLogger(TestFileLocator.class);

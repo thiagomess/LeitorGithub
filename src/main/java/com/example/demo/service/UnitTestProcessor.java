@@ -17,10 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Componente responsável por processar classes de teste unitário.
- * Lida com a criação, atualização e análise de testes unitários.
- */
 @Component
 public class UnitTestProcessor {
     private static final Logger log = LoggerFactory.getLogger(UnitTestProcessor.class);
@@ -39,9 +35,6 @@ public class UnitTestProcessor {
         this.testFileLocator = testFileLocator;
     }
 
-    /**
-     * Processa a lógica de teste unitário para um match específico.
-     */
     public Mono<ResponseEntity<ApiResponse>> processUnitTest(ControllerMatch match, String scope, String path) {
         if (match == null) {
             log.info("Nenhuma classe com scope encontrada para criar teste unitário");
@@ -65,9 +58,6 @@ public class UnitTestProcessor {
                 });
     }
 
-    /**
-     * Processa uma classe de teste existente.
-     */
     private Mono<ResponseEntity<ApiResponse>> processExistingTestClass(Path testClassPath, Path originalClassPath,
             String scope, String path) {
         return stackspotClient.getAccessToken()
@@ -111,9 +101,6 @@ public class UnitTestProcessor {
                 });
     }
 
-    /**
-     * Cria um novo teste unitário.
-     */
     private Mono<ResponseEntity<ApiResponse>> createNewUnitTest(String scope, String path, String className,
             Path originalClassPath) {
         return stackspotClient.getAccessToken()

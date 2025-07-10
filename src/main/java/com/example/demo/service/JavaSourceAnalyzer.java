@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-/**
- * Componente responsável pela análise de código-fonte Java,
- * especialmente focado na análise de controllers Spring.
- */
 @Component
 public class JavaSourceAnalyzer {
     private static final Logger log = LoggerFactory.getLogger(JavaSourceAnalyzer.class);
@@ -32,10 +28,6 @@ public class JavaSourceAnalyzer {
         this.javaParser = new JavaParser();
     }
 
-    /**
-     * Analisa arquivos Java em um diretório buscando controllers com scope e path
-     * específicos.
-     */
     public List<ControllerMatch> analyzeJavaFiles(String directory, String scope, String path) {
         List<ControllerMatch> result = new ArrayList<>();
 
@@ -55,10 +47,6 @@ public class JavaSourceAnalyzer {
         return result;
     }
 
-    /**
-     * Analisa um único arquivo Java procurando por controllers com scope e path
-     * específicos.
-     */
     private void analyzeJavaFile(Path javaPath, String scope, String path, List<ControllerMatch> result) {
         boolean scopeFound = false;
         boolean pathFound = false;
@@ -101,9 +89,6 @@ public class JavaSourceAnalyzer {
         }
     }
 
-    /**
-     * Verifica se um método tem o scope especificado em suas anotações.
-     */
     private boolean hasScope(MethodDeclaration method, String scope) {
         Optional<AnnotationExpr> preAuthorize = method.getAnnotationByName("PreAuthorize");
         if (!preAuthorize.isPresent()) {
@@ -128,9 +113,6 @@ public class JavaSourceAnalyzer {
         return false;
     }
 
-    /**
-     * Verifica se um método tem o path especificado em suas anotações.
-     */
     private boolean hasPath(MethodDeclaration method, String path) {
         Optional<AnnotationExpr> mapping = method.getAnnotationByName("GetMapping")
                 .or(() -> method.getAnnotationByName("PostMapping"))
